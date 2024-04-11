@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="http://127.0.0.1:5000/login">ログイン画面へ戻る</a>
+    </div>
+</nav>
+<style>
+    .manager-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+<div class="container">
+    <div class="manager-header">
+        <h2>マネージャーページ</h2>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#chatGPTModal">Voicesと対話する</button>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th>作成日時</th>
+                <th>経営層からの言葉</th>
+                <th>イイネ</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+<tr>
+    <td>{{ post.title }}</td>
+    <td>{{ post.body }}</td>
+    <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+    <td>
+        <form onsubmit="event.preventDefault(); updateManagerComment('{{ post.id }}');">
+            <input type="text" name="manager_comment" id="manager-comment-{{ post.id }}" value="{{ post.manager_comment }}" class="form-control">
+            <button type="submit" class="btn btn-sm btn-info">更新</button>
+        </form>
+    </td>
+    <td>{{ post.likes }}</td>
+    <td>
+        <form action="/manager/like/{{ post.id }}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-success">イイネ</button>
+            </form>
+    </td>
+    </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- モーダル定義をループの外に移動 -->
+</div>
+<div class="modal fade" id="chatGPTModal" tabindex="-1" aria-labelledby="chatGPTModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chatGPTModalLabel">Voicesとの対話</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chatHistory" style="height: 200px; overflow-y: auto; background-color: #f8f9fa; margin-bottom: 10px; padding: 10px;"></div>
+                <textarea id="chatGPTInput" class="form-control" placeholder="ここに質問を入力してください"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                <button type="button" class="btn btn-primary" onclick="continueChatGPT()">対話を続ける</button>
+                <button type="button" class="btn btn-primary" onclick="copyToClipboard()">Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+  
+  <script>
+
+function updateManagerComment(postId) {
+  var formData = new FormData();
+  formData.append('manager_comment', document.getElementById('manager-comment-' + postId).value);
+
+  fetch('/manager/comment/update/' + postId, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.status === 'success') {
+      alert(data.message); // "コメントが更新されました"とアラート表示
+      // ここで成功時の処理を行う
+    } else {
+      alert("更新に失敗しました"); // エラー処理
+    }
+  })
+  .catch(error => console.error('Error:', error));
+}
+// メッセージをチャット履歴に追加する関数
+function addMessage(text, sender) {
+    var chatHistory = document.getElementById('chatHistory');
+    var messageElement = document.createElement('div');
+    messageElement.textContent = text;
+    messageElement.className = sender === 'user' ? 'text-end' : 'text-start';
+    chatHistory.appendChild(messageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight; // スクロールダウン
+}
+
+// 「対話を続ける」ボタンの処理
+function continueChatGPT() {
+    var input = document.getElementById('chatGPTInput').value;
+    if (input) {
+        addMessage(input, 'user'); // チャット履歴にユーザーの入力を追加
+        document.getElementById('chatGPTInput').value = ''; // テキストボックスをクリア
+    }
+    addMessage("これはチャットボットの応答です。", 'bot'); // チャットボットのダミー応答を追加
+}
+
+// 「コピー」ボタンの処理の修正
+function copyToClipboard() {
+    var inputElement = document.getElementById('chatGPTInput');
+    inputElement.select();
+    document.execCommand('copy');
+    alert('コピーしました');
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="http://127.0.0.1:5000/">ホーム</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+    </div>
+  </div>
+</nav>
+<div class="container">
+    <h1>今の気持ちについて話してみる</h1>
+    <form method="POST" id="mainForm">
+        <div class="radio-wrap">
+            <label for="emotion">喜（Joy）</label><input type="radio" name="emotion" value="1">
+            <label for="emotion">怒（Angry）</label><input type="radio" name="emotion" value="2">
+            <label for="emotion">悲（Sad）</label><input type="radio" name="emotion" value="3">
+            <label for="emotion">楽（Happy）</label><input type="radio" name="emotion" value="4">
+            <label for="emotion">心配・困った（Worried）</label><input type="radio" name="emotion" value="5">
+            <label for="emotion">複雑（Mixed）</label><input type="radio" name="emotion" value="6">
+        </div>
+
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#chatGPTModal">Voicesと対話する</button>
+        <label for="title">タイトル</label>
+        <input type="text" name="title">
+        <label for="body">内容</label>
+        <input type="text" name="body">
+        <input type="submit" value="投稿します">
+    </form>
+
+    <div class="modal fade" id="chatGPTModal" tabindex="-1" aria-labelledby="chatGPTModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="chatGPTModalLabel">Voicesとの対話</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="chatHistory" style="height: 200px; overflow-y: auto; background-color: #f8f9fa; margin-bottom: 10px; padding: 10px;"></div>
+            <textarea id="chatGPTInput" class="form-control" placeholder="ここに質問を入力してください"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            <button type="button" class="btn btn-primary" id="continueChat">対話を続ける</button>
+            <button type="button" class="btn btn-primary" id="sendMessage">送信する</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var chatHistory = document.getElementById('chatHistory');
+    var chatGPTInput = document.getElementById('chatGPTInput');
+    var mainForm = document.getElementById('mainForm');
+    
+    document.getElementById('chatGPTModal').addEventListener('show.bs.modal', function (event) {
+        var emotionMessage = {
+            1: "嬉しいことがあったようですね。ぜひ嬉しい気持ちをシェアしてください！",
+            2: "ぜひ何があったのか話してくれませんか？力になりたいです。",
+            3: "ぜひ何があったのか話してくれませんか？力になりたいです。",
+            4: "嬉しいことがあったようですね。ぜひ嬉しい気持ちをシェアしてください！",
+            5: "もやもやしていることがありますか？なんでも相談してください。",
+            6: "何か悩み事がありますか？なんでも相談してください。"
+        };
+        var selectedEmotion = document.querySelector('input[name="emotion"]:checked').value;
+        var initialMessage = emotionMessage[selectedEmotion];
+        addMessage(initialMessage, 'bot');
+    });
+
+    document.getElementById('continueChat').addEventListener('click', function() {
+        var inputText = chatGPTInput.value;
+        if (inputText) {
+            addMessage(inputText, 'user'); // チャット履歴にユーザーの入力を追加
+            chatGPTInput.value = ''; // テキストボックスをクリア
+        }
+        addMessage("これはチャットボットの応答です。", 'bot'); // チャットボットのダミー応答を追加
+    });
+
+    document.getElementById('sendMessage').addEventListener('click', function() {
+    var inputText = chatGPTInput.value;
+    if (inputText) {
+        // addMessage(inputText, 'user'); // チャット履歴に追加しない
+        chatGPTInput.value = ''; // テキストボックスをクリア
+        mainForm.body.value = inputText; // 最後に入力された内容を「内容」に反映
+        $('#chatGPTModal').modal('hide'); // モーダルを閉じる
+    }
+});
+
+    function addMessage(text, sender) {
+        var chatHistory = document.getElementById('chatHistory');
+        var messageDiv = document.createElement('div');
+        messageDiv.textContent = text;
+        messageDiv.className = sender === 'user' ? 'text-end' : 'text-start';
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // スクロール
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}ログインページ{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>ログイン画面</h1>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="username" class="form-label">ユーザー名</label>
+            <input type="text" name="username" class="form-control" id="username">
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">パスワード</label>
+            <input type="password" name="password" class="form-control" id="password">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="manager_redirect" name="manager_redirect">
+            <label class="form-check-label" for="manager_redirect">マネージャーページへ遷移する</label>
+        </div>
+        <button type="submit" class="btn btn-primary">ログイン</button>
+    </form>
+</div>
+{% endblock %}

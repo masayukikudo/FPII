@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="http://127.0.0.1:5000/">ホーム</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+      </div>
+    </div>
+  </nav>
+<div class="container">
+    <h1>経営層からの言葉の確認</h1>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th>編集</th>
+                <th>削除</th>
+                <th>作成日時</th>
+                <th>経営層からの言葉</th>
+                <th>イイネ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.title }}</td>
+                <td>{{ post.body }}</td>
+                <td><a href="/{{ post.id }}/update" role="button">編集</a></td>
+                <td><a href="/{{ post.id }}/delete" role="button">削除</a></td>
+                <td>{{ post.created_at.strftime('%y%m%d') }}</td>
+                <td>{{ post.manager_comment }}</td>
+                <td>{{ post.likes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
